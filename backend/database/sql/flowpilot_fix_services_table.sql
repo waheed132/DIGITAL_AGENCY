@@ -1,0 +1,5 @@
+-- See: 00_ORDER_run_in_phpmyadmin.txt
+-- Quick path for the errors you saw:
+--   01_flowpilot_create_services_table.sql
+--   02_flowpilot_add_tasks_service_id.sql  (skip if tasks.service_id exists)
+--   03_flowpilot_create_deliverables_table.sql

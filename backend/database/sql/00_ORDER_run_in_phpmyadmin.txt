@@ -1,0 +1,26 @@
+FlowPilot / digital_agency — manual MySQL repair (when `php artisan migrate` was not run)
+========================================================================================
+
+Run scripts in this order in phpMyAdmin (select your DB first, e.g. `flowpilot`):
+
+  1) 01_flowpilot_create_services_table.sql
+  2) 02_flowpilot_add_tasks_service_id.sql   ← SKIP if `tasks` already has column `service_id`
+  3) 03_flowpilot_create_deliverables_table.sql
+
+Optional (only if those tables are also missing — check Structure in phpMyAdmin):
+
+  4) 04_flowpilot_create_task_attachments_table.sql
+  5) 05_flowpilot_create_activity_logs_table.sql
+
+Best fix (recommended): from the `backend` folder run:
+
+  php artisan migrate
+
+This applies every migration in the correct order and records them in `migrations`.
+
+If you already created some tables/columns manually and `migrate` complained about duplicates,
+the migrations in this repo are now written to skip steps when tables/columns already exist — run
+`php artisan migrate` again.
+
+Deliverables error: run script `03_flowpilot_create_deliverables_table.sql` OR `php artisan migrate`
+(after `services` exists — use `01` first if needed).

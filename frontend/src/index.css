@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+  --color-fp-surface: #0c1222;
+  --color-fp-elevated: #121a2e;
+  --color-fp-border: rgba(148, 163, 184, 0.12);
+  --color-fp-accent: #34d399;
+  --color-fp-accent-dim: rgba(52, 211, 153, 0.12);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/**
+ * Scrollbars — dark-theme aligned, thin thumb, no heavy Windows arrows (WebKit).
+ * Scoped to fine-pointer devices: phones/tablets keep familiar overlay scroll behaviour.
+ */
+@media (pointer: fine) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(71 85 105 / 0.45) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgb(71 85 105 / 0.42);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(52 211 153 / 0.38);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background-color: rgb(52 211 153 / 0.52);
+  }
+
+  *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/**
+ * Optional: hide scrollbar visually but keep scroll (keyboard / gesture still works).
+ * Use sparingly — e.g. horizontal chip rails — not for main content.
+ */
+.fp-scroll-overlay {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.fp-scroll-overlay::-webkit-scrollbar {
+  display: none;
+}
+
+/* Navigation chrome — Inter reads closer to system UI (Apple-style clarity) */
+.admin-sidebar {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Focus rings for keyboard users */
+:focus-visible {
+  outline: 2px solid rgb(52 211 153 / 0.5);
+  outline-offset: 2px;
+}
+
+/**
+ * Native <select> in dark admin UI — avoids light OS dropdown + illegible option text
+ * (especially Windows / Chrome). Keeps list readable on mobile Safari / Firefox too.
+ */
+.fp-native-select {
+  color-scheme: dark;
+  background-color: rgb(18 26 46);
+  color: rgb(226 232 240);
+}
+
+.fp-native-select option {
+  background-color: rgb(15 23 42);
+  color: rgb(226 232 240);
+}
