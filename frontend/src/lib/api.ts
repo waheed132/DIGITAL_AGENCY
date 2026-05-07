@@ -9,6 +9,17 @@ export type ApiUser = {
 
 const TOKEN_KEY = 'flowpilot_token'
 const USER_SNAPSHOT_KEY = 'flowpilot_user_snapshot'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+
+function buildApiUrl(path: string): string {
+  if (/^https?:\/\//.test(path)) {
+    return path
+  }
+
+  const normalizedBase = API_BASE_URL.replace(/\/+$/, '')
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return `${normalizedBase}${normalizedPath}`
+}
 
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
@@ -85,7 +96,7 @@ export async function apiRequest<T>(
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  const res = await fetch(path, { ...options, headers })
+  const res = await fetch(buildApiUrl(path), { ...options, headers })
   const data = (await res.json().catch(() => null)) as T | ApiErrorBody | null
 
   if (res.status === 401) {
@@ -116,7 +127,7 @@ export async function fetchProtectedBlob(path: string): Promise<Blob> {
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
   }
-  const res = await fetch(path, { headers })
+  const res = await fetch(buildApiUrl(path), { headers })
   if (!res.ok) {
     throw new ApiError(`Could not load file (${res.status})`, res.status, null)
   }
