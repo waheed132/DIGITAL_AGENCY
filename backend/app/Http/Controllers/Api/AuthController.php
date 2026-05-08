@@ -7,12 +7,22 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     public function login(Request $request): JsonResponse
     {
+        Log::info('Auth login request received', [
+            'path' => $request->path(),
+            'origin' => $request->headers->get('origin'),
+            'referer' => $request->headers->get('referer'),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'has_login' => $request->filled('login'),
+        ]);
+
         $validated = $request->validate([
             'login' => ['required', 'string'],
             'password' => ['required', 'string'],
