@@ -9,7 +9,7 @@ export type ApiUser = {
 
 const TOKEN_KEY = 'flowpilot_token'
 const USER_SNAPSHOT_KEY = 'flowpilot_user_snapshot'
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
 
 function buildApiUrl(path: string): string {
   if (/^https?:\/\//.test(path)) {
@@ -17,8 +17,25 @@ function buildApiUrl(path: string): string {
   }
 
   const normalizedBase = API_BASE_URL.replace(/\/+$/, '')
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`
-  return `${normalizedBase}${normalizedPath}`
+  const trimmedPath = path.trim()
+  let normalizedPath: string
+
+  if (trimmedPath.startsWith('/api')) {
+    normalizedPath = trimmedPath
+  } else if (trimmedPath.startsWith('api/')) {
+    normalizedPath = `/${trimmedPath}`
+  } else if (trimmedPath.startsWith('/')) {
+    normalizedPath = `/api${trimmedPath}`
+  } else {
+    normalizedPath = `/api/${trimmedPath}`
+  }
+
+  // Guard against accidental double-prefixing like /api/api/auth/login
+  normalizedPath = normalizedPath.replace(/^\/api\/api\//, '/api/')
+
+  const finalUrl = `${normalizedBase}${normalizedPath}`
+  console.log('API REQUEST:', finalUrl)
+  return finalUrl
 }
 
 export function getStoredToken(): string | null {
