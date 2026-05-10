@@ -11,7 +11,7 @@ import {
 } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Check, ChevronLeft, ImagePlus, ClipboardList, Copy, RotateCcw, X } from 'lucide-react'
-import { ApiError, apiRequest } from '../../lib/api'
+import { ApiError, apiRequest, buildApiUrl } from '../../lib/api'
 import { FlowPilotMark } from '../../components/SidebarBrandHeader'
 
 /** Multi-step intake — draft saved locally (drops oversized logo if quota exceeded). */
@@ -398,7 +398,7 @@ export function ClientIntakePage() {
     let cancelled = false
     void (async () => {
       try {
-        const res = await fetch(`/api/public/client-intake/${inviteToken}`, {
+        const res = await fetch(buildApiUrl(`/api/public/client-intake/${inviteToken}`), {
           headers: { Accept: 'application/json' },
         })
         const body = (await res.json().catch(() => ({}))) as { message?: string; label?: string | null }

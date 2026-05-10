@@ -9,14 +9,26 @@ export type ApiUser = {
 
 const TOKEN_KEY = 'flowpilot_token'
 const USER_SNAPSHOT_KEY = 'flowpilot_user_snapshot'
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
 
-function buildApiUrl(path: string): string {
+/** Backend origin only — no trailing slash, no `/api` suffix (paths already include `/api/...`). */
+function normalizeApiBaseUrl(raw: string): string {
+  const trimmed = raw.trim().replace(/\/+$/, '')
+  if (trimmed.endsWith('/api')) {
+    return trimmed.slice(0, -4).replace(/\/+$/, '')
+  }
+  return trimmed
+}
+
+const API_BASE_URL = normalizeApiBaseUrl(
+  import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
+)
+
+export function buildApiUrl(path: string): string {
   if (/^https?:\/\//.test(path)) {
     return path
   }
 
-  const normalizedBase = API_BASE_URL.replace(/\/+$/, '')
+  const normalizedBase = API_BASE_URL
   const trimmedPath = path.trim()
   let normalizedPath: string
 
@@ -34,7 +46,9 @@ function buildApiUrl(path: string): string {
   normalizedPath = normalizedPath.replace(/^\/api\/api\//, '/api/')
 
   const finalUrl = `${normalizedBase}${normalizedPath}`
-  console.log('API REQUEST:', finalUrl)
+  if (import.meta.env.DEV) {
+    console.log('API REQUEST:', finalUrl)
+  }
   return finalUrl
 }
 
