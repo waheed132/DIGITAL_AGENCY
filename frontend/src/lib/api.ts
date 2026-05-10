@@ -95,7 +95,48 @@ export function setStoredUserSnapshot(user: ApiUser | null): void {
 
 type ApiErrorBody = {
   message?: string
-  errors?: Record<string, string[]>
+  errors?: Record<string, string[] | string>
+}
+
+/** Laravel validation/auth: prefer field messages over generic top-level `message`. */
+function firstStringFromErrors(errors: Record<string, string[] | string>): string | null {
+  const preferredKeys = ['login', 'email', 'password'] as const
+  for (const key of preferredKeys) {
+    const v = errors[key]
+    if (typeof v === 'string' && v.trim()) return v.trim()
+    if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'string' && v[0].trim()) {
+      return v[0].trim()
+    }
+  }
+  for (const v of Object.values(errors)) {
+    if (typeof v === 'string' && v.trim()) return v.trim()
+    if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'string' && v[0].trim()) {
+      return v[0].trim()
+    }
+  }
+  return null
+}
+
+function parseApiErrorPayload(raw: unknown): ApiErrorBody | null {
+  if (!raw || typeof raw !== 'object') return null
+  const o = raw as Record<string, unknown>
+  const message = typeof o.message === 'string' ? o.message : undefined
+  let errors: Record<string, string[] | string> | undefined
+  if (o.errors && typeof o.errors === 'object' && !Array.isArray(o.errors)) {
+    errors = o.errors as Record<string, string[] | string>
+  }
+  if (message === undefined && errors === undefined) return null
+  return { message, errors }
+}
+
+function messageFromApiFailure(raw: unknown, status: number): string {
+  const body = parseApiErrorPayload(raw)
+  if (body?.errors) {
+    const fromFields = firstStringFromErrors(body.errors)
+    if (fromFields) return fromFields
+  }
+  if (body?.message?.trim()) return body.message.trim()
+  return `Request failed (${status})`
 }
 
 export class ApiError extends Error {
@@ -127,24 +168,24 @@ export async function apiRequest<T>(
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  const res = await fetch(buildApiUrl(path), { ...options, headers })
-  const data = (await res.json().catch(() => null)) as T | ApiErrorBody | null
+  const url = buildApiUrl(path)
+  const res = await fetch(url, { ...options, headers })
+  const data = (await res.json().catch(() => null)) as T | unknown
 
   if (res.status === 401) {
     setStoredToken(null)
   }
 
   if (!res.ok) {
-    const errBody = data as ApiErrorBody | null
-    let msg =
-      errBody?.message ||
-      `Request failed (${res.status})`
-    if (errBody?.errors) {
-      const first = Object.values(errBody.errors)[0]?.[0]
-      if (first) {
-        msg = first
-      }
-    }
+    const errBody = parseApiErrorPayload(data)
+    const msg = messageFromApiFailure(data, res.status)
+    // Temporary diagnostics (login / API parity local vs Vercel)
+    console.warn('[apiRequest:error]', {
+      url,
+      status: res.status,
+      responseJson: data,
+      finalMessage: msg,
+    })
     throw new ApiError(msg, res.status, errBody)
   }
 

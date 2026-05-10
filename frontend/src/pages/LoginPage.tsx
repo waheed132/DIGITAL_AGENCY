@@ -35,7 +35,13 @@ export function LoginPage() {
         },
       )
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Sign-in failed')
+      const msg =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error && err.message.trim()
+            ? err.message
+            : null
+      setError(msg ?? 'Sign-in failed')
     } finally {
       setBusy(false)
     }
