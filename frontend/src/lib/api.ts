@@ -12,7 +12,11 @@ const USER_SNAPSHOT_KEY = 'flowpilot_user_snapshot'
 
 /** Backend origin only — no trailing slash, no `/api` suffix (paths already include `/api/...`). */
 function normalizeApiBaseUrl(raw: string): string {
-  const trimmed = raw.trim().replace(/\/+$/, '')
+  let trimmed = raw.trim().replace(/^["']|["']$/g, '')
+  // Vercel/.env mistake: value field contains `VITE_API_URL=https://...` → fetch treats URL as
+  // relative and hits the frontend (405). Strip accidental key prefix.
+  trimmed = trimmed.replace(/^VITE_API_URL\s*=\s*/i, '').trim()
+  trimmed = trimmed.replace(/\/+$/, '')
   if (trimmed.endsWith('/api')) {
     return trimmed.slice(0, -4).replace(/\/+$/, '')
   }
