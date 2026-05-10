@@ -173,7 +173,25 @@ export async function apiRequest<T>(
   }
 
   const url = buildApiUrl(path)
-  const res = await fetch(url, { ...options, headers })
+  let res: Response
+  try {
+    res = await fetch(url, { ...options, headers })
+  } catch (err) {
+    // Browser often reports CORS here when the API returns 502/HTML without ACAO — root cause is Railway/backend.
+    const reason = err instanceof Error ? err.message : 'Network error'
+    if (
+      import.meta.env.DEV ||
+      String(import.meta.env.VITE_DEBUG_API || '').toLowerCase() === 'true'
+    ) {
+      console.warn('[apiRequest:network]', { url, err })
+    }
+    throw new ApiError(
+      `${reason} The API did not respond correctly (often Railway 502: open deploy logs, confirm start command uses host 0.0.0.0 and PORT).`,
+      0,
+      null,
+    )
+  }
+
   const data = (await res.json().catch(() => null)) as T | unknown
 
   if (res.status === 401) {
