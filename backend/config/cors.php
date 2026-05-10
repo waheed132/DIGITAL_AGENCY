@@ -7,9 +7,11 @@ return [
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | Use paths ['*'] so OPTIONS preflight always hits HandleCors (avoids 404
-    | when path matching would skip CORS). Preview URLs (*.vercel.app) must be
-    | allowed via patterns when not listed in allowed_origins.
+    | Bearer-token API without cookies: wildcard origin is safe and avoids
+    | preflight failing when Origin does not match a narrow allow-list (Firefox
+    | then reports “CORS missing” / confusing status codes).
+    |
+    | Frontend still hosted on Vercel; lock down origins again if you add cookies.
     |
     */
 
@@ -17,16 +19,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://digital-agency-six-jet.vercel.app',
-        'https://digital-agency-git-main-waheed132s-projects.vercel.app',
-        'http://localhost:5173',
-    ],
+    'allowed_origins' => ['*'],
 
-    'allowed_origins_patterns' => [
-        // Preview + branch deploys: *.vercel.app (Origin header must match HTTPS)
-        '#^https://.+\\.vercel\\.app$#i',
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 

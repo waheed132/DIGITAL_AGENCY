@@ -30,6 +30,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => ['status' => 'ok', 'app' => config('app.name')]);
 
+// Explicit preflight so OPTIONS never 404s if proxy skips Laravel CORS handling edge cases.
+Route::options('/auth/login', fn () => response('', 204));
+
 Route::post('/auth/login', [AuthController::class, 'login'])
     ->middleware('throttle:10,1');
 

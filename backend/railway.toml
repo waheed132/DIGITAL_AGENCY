@@ -1,10 +1,11 @@
-# Railway: uses repo root = backend (set "Root Directory" to `backend` on the service).
-# 502 + "CORS missing" in the browser usually means the proxy got no valid Laravel response
-# (app crashed, wrong port, or process not listening on 0.0.0.0).
+# Railway: set service "Root Directory" to `backend`.
+# optimize:clear avoids stale config/route cache breaking CORS paths after deploy.
+#
+# NOTE: Do not wrap PORT in single quotes (sh -c '... $PORT ...') or it will not expand.
 
 [build]
 builder = "nixpacks"
 
 [deploy]
-startCommand = "sh -c 'php artisan serve --host=0.0.0.0 --port=${PORT:-8080}'"
+startCommand = "php artisan optimize:clear && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
 restartPolicyType = "ON_FAILURE"
