@@ -179,13 +179,17 @@ export async function apiRequest<T>(
   if (!res.ok) {
     const errBody = parseApiErrorPayload(data)
     const msg = messageFromApiFailure(data, res.status)
-    // Temporary diagnostics (login / API parity local vs Vercel)
-    console.warn('[apiRequest:error]', {
-      url,
-      status: res.status,
-      responseJson: data,
-      finalMessage: msg,
-    })
+    if (
+      import.meta.env.DEV ||
+      String(import.meta.env.VITE_DEBUG_API || '').toLowerCase() === 'true'
+    ) {
+      console.warn('[apiRequest:error]', {
+        url,
+        status: res.status,
+        responseJson: data,
+        finalMessage: msg,
+      })
+    }
     throw new ApiError(msg, res.status, errBody)
   }
 
